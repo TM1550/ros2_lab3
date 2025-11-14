@@ -193,50 +193,7 @@ class CleaningActionServer(Node):
         
         self.get_logger().info(f'Square cleaning completed: {cleaned_points} points, {total_distance:.2f} meters')
         return True, total_points, total_distance
-
-    def clean_circle(self, goal_handle, radius, feedback):
-        if self.pose is None:
-            return False, 0, 0.0
-            
-        circumference = 2 * math.pi * radius
-        total_points = int(circumference * 10)
-        cleaned_points = 0
-        total_distance = 0.0
-        start_x, start_y = self.pose.x, self.pose.y
-        
-        # Движение по кругу
-        angle = 0.0
-        target_angle = 2 * math.pi
-        
-        while angle < target_angle and rclpy.ok():
-            if goal_handle.is_cancel_requested:
-                self.stop_robot()
-                return False, cleaned_points, total_distance
-            
-            # Движение по кругу
-            twist = Twist()
-            twist.linear.x = 0.5
-            twist.angular.z = 0.5 / radius
-            self.publisher.publish(twist)
-            
-            # Вычисляем прогресс
-            angle += 0.1
-            distance = angle * radius
-            cleaned_points = min(total_points, int(distance * 10))
-            progress = min(100, int((angle / target_angle) * 100))
-            
-            # Обновляем feedback
-            feedback.progress_percent = progress
-            feedback.current_cleaned_points = cleaned_points
-            feedback.current_x = self.pose.x
-            feedback.current_y = self.pose.y
-            goal_handle.publish_feedback(feedback)
-            
-            rclpy.spin_once(self, timeout_sec=0.1)
-        
-        total_distance = circumference
-        self.stop_robot()
-        return True, total_points, total_distance
+    
 
     def return_home(self, goal_handle, target_x, target_y, feedback):
         if self.pose is None:
