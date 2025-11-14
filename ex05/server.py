@@ -121,10 +121,7 @@ class CleaningActionServer(Node):
             # Вычисляем разницу углов
             angle_diff = target_angle - self.pose.theta
             # Нормализуем угол в диапазон [-pi, pi]
-            while angle_diff > math.pi:
-                angle_diff -= 2 * math.pi
-            while angle_diff < -math.pi:
-                angle_diff += 2 * math.pi
+            angle_diff = (angle_diff + math.pi) % (2 * math.pi) - math.pi
             
             # Управление движением
             twist = Twist()
@@ -140,8 +137,6 @@ class CleaningActionServer(Node):
             self.publisher.publish(twist)
             
             # Обновляем feedback
-            progress = max(0, min(100, int((1 - distance / math.sqrt((target_x-start_x)**2 + (target_y-start_y)**2)) * 100)))
-            feedback.progress_percent = progress
             feedback.current_x = self.pose.x
             feedback.current_y = self.pose.y
             goal_handle.publish_feedback(feedback)
